@@ -73,12 +73,15 @@ class CriterionExporter(ReferenceExporter):
             return super(CriterionExporter, self).__call__(data)
         # Marshall fails when object has UID that is equal to None
         # fix it here by setting it to empty string and after marshalling setting back to old value
-        old_uid_attr = getattr(self.context, atcfg.UUID_ATTR)
+        old_uid_attr = getattr(self.context, atcfg.UUID_ATTR, None)
         setattr(self.context, atcfg.UUID_ATTR, "")
 
         ct, length, xml = self.marshaller.marshall(self.context)
         xml = self.exportReferences(xml)
         data['data'] = xml
 
-        setattr(self.context, atcfg.UUID_ATTR, old_uid_attr)
+        if old_uid_attr is None:
+            delattr(self.context, atcfg.UUID_ATTR)
+        else:
+            setattr(self.context, atcfg.UUID_ATTR, old_uid_attr)
         return data
